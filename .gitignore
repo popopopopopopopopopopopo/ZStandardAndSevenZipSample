@@ -1,0 +1,7 @@
+﻿################################################################################
+# この .gitignore ファイルは Microsoft(R) Visual Studio によって自動的に作成されました。
+################################################################################
+
+/.vs/ZStandardNETSample/v15
+/ZStandardNETSample/bin/Debug
+/ZStandardNETSample/obj
