@@ -1,12 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using Prism.Commands;
 using Prism.Mvvm;
+using SevenZip;
 using SharpCompress.Archives;
+using SharpCompress.Archives.SevenZip;
 using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
+using SharpCompress.Writers;
 using ZstdNet;
 
 namespace ZStandardNETSample.ViewModels
@@ -32,8 +36,8 @@ namespace ZStandardNETSample.ViewModels
         {
             CompressCommand = new DelegateCommand(ZStandardCompress);
             DeCompressCommand = new DelegateCommand(ZStandardDecompress);
-            SevenzipArchiveCommand = new DelegateCommand(SevenZipArchive);
-            SevenzipDeArchiveCommand = new DelegateCommand(SevenZipDeArchive);
+            SevenzipArchiveCommand = new DelegateCommand(DoSevenZipArchive);
+            SevenzipDeArchiveCommand = new DelegateCommand(DoSevenZipDeArchive);
         }
 
         private void ZStandardCompress()
@@ -102,20 +106,26 @@ namespace ZStandardNETSample.ViewModels
             }
         }
 
-        private void SevenZipArchive()
+        private void DoSevenZipArchive()
         {
             var sourceDir = @"D:\share\ZStandard\SevenZip\target";
             var destDir = @"D:\share\ZStandard\SevenZip\";
             var destFile = Path.Combine(destDir, "hoge.7z");
 
-            using (var archive = ZipArchive.Create())
-            {
-                archive.AddAllFromDirectory(sourceDir);
-                archive.SaveTo(destFile, CompressionType.Deflate);
-            }
+            var files = Directory.GetFiles(sourceDir);
+
+            var libPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "7z.dll");
+
+            SevenZipCompressor.SetLibraryPath(libPath);
+
+            var szc = new SevenZipCompressor();
+            szc.CompressionMethod = CompressionMethod.Lzma;
+            szc.CompressionMode = CompressionMode.Create;
+            szc.CompressionLevel = CompressionLevel.Normal;
+            szc.CompressFiles(destFile, files);
         }
 
-        private void SevenZipDeArchive()
+        private void DoSevenZipDeArchive()
         {
             var sourceDir = @"D:\share\ZStandard\SevenZip\";
             var sourceFile = Path.Combine(sourceDir, "hoge.7z");
