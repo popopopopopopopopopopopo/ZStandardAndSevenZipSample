@@ -5,12 +5,6 @@ using System.Reflection;
 using Prism.Commands;
 using Prism.Mvvm;
 using SevenZip;
-using SharpCompress.Archives;
-using SharpCompress.Archives.SevenZip;
-using SharpCompress.Archives.Zip;
-using SharpCompress.Common;
-using SharpCompress.Readers;
-using SharpCompress.Writers;
 using ZstdNet;
 
 namespace ZStandardNETSample.ViewModels
@@ -131,20 +125,11 @@ namespace ZStandardNETSample.ViewModels
             var sourceFile = Path.Combine(sourceDir, "hoge.7z");
             var extractDir = @"D:\share\ZStandard\SevenZip\extract";
 
-            using (Stream stream = File.OpenRead(sourceFile))
-            using (var reader = ReaderFactory.Open(stream))
+            using (var tmp = new SevenZipExtractor(sourceFile))
             {
-                while (reader.MoveToNextEntry())
+                for(int i = 0; i < tmp.ArchiveFileData.Count; i++)
                 {
-                    if (!reader.Entry.IsDirectory)
-                    {
-                        Console.WriteLine(reader.Entry.Key);
-                        reader.WriteEntryToDirectory(extractDir, new ExtractionOptions()
-                        {
-                            ExtractFullPath = true,
-                            Overwrite = true
-                        });
-                    }
+                    tmp.ExtractFiles(extractDir,tmp.ArchiveFileData[i].Index);
                 }
             }
         }
